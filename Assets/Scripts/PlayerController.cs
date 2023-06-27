@@ -171,6 +171,12 @@ public class PlayerController : MonoBehaviour
 
     private void AllowLedgeGrab() => canGrabLedge = true;
 
+    private void Grab()
+    {
+        RaycastHit hit;
+        
+    }
+
     private void OnDrawGizmos()
     {
         Vector3 origin = transform.position + boxColliderCenter - new Vector3(0f, .05f, 0f);
@@ -179,18 +185,5 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawWireCube(origin, Vector3.Scale(boxColliderSize, boxCastSize));
     }
 
-    private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        Rigidbody rigidbody = hit.collider.attachedRigidbody;
-
-        if (rigidbody != null)
-        {
-            Vector3 forceDirection = hit.gameObject.transform.position - transform.position;
-            forceDirection.y = 0;
-            forceDirection.Normalize();
-
-            rigidbody.AddForceAtPosition(forceDirection * forceMagnitude, transform.position, ForceMode.Impulse);
-        }
-    }
 }
 
