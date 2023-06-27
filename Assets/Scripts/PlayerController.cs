@@ -35,17 +35,25 @@ public class PlayerController : MonoBehaviour
 
     [Header("Misc")]
     [SerializeField] private LayerMask collidableLayers;
-    [SerializeField] private LayerMask climableLayers;
+    [SerializeField] public LayerMask climableLayers;
 
     // Ground Collision Detection
     private Vector3 boxColliderCenter;
     private Vector3 boxColliderSize;
 
     // Ledge Climbing
+    [Header("Ledge Info")]
+    [SerializeField] private Vector3 offset1; // Offest for position before climb
+    [SerializeField] private Vector3 offset2; // Offset for position after climb
     [HideInInspector] public bool ledgeDetected;
 
+    private Vector3 climbBegunPosition;
+    private Vector3 climbOverPosition;
+    private bool canGrabLedge = true;
+    private bool canClimb;
 
-    void Start()
+
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
@@ -56,15 +64,15 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         Move();
         Jump();
         Run();
-        Debug.Log("Ledge = " + ledgeDetected);
+        CheckForLedge();
     }
 
-    void Move()
+    private void Move()
     {
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
@@ -89,7 +97,7 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector3(moveDirection.x * movingSpeed, rb.velocity.y, moveDirection.z * movingSpeed);
     }
 
-    void Jump()
+    private void Jump()
     {
         CheckIfGrounded();
 
@@ -103,7 +111,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void Run()
+    private void Run()
     {
         if (Input.GetKey(KeyCode.LeftShift))
         {
@@ -116,7 +124,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void CheckIfGrounded()
+    private void CheckIfGrounded()
     {
         Vector3 origin = transform.position + boxColliderCenter - new Vector3(0f, .05f, 0f);
         Vector3 boxCastSize = new Vector3(2.8f, 0.5f, 0.7f);
@@ -132,6 +140,36 @@ public class PlayerController : MonoBehaviour
             state = MovementState.Air;
         }
     }
+
+    private void CheckForLedge()
+    {
+        if (ledgeDetected && canGrabLedge)
+        {
+            canGrabLedge = false;
+
+            Vector3 ledgePosition = GetComponentInChildren<LedgeDetection>().transform.position;
+
+            climbBegunPosition = ledgePosition + offset1;
+            climbOverPosition = ledgePosition + offset2;
+
+            canClimb = true;
+        }
+
+        if (canClimb)
+        {
+            transform.position = climbBegunPosition;
+            LedgeClimbOver();
+        }
+    }
+
+    private void LedgeClimbOver()
+    {
+        canClimb = false;
+        transform.position = climbOverPosition;
+        Invoke("AllowLedgeGrab", .1f);
+    }
+
+    private void AllowLedgeGrab() => canGrabLedge = true;
 
     private void OnDrawGizmos()
     {

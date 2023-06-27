@@ -6,12 +6,13 @@ public class LedgeDetection : MonoBehaviour
 {
     [SerializeField] private float radius;
     [SerializeField] private PlayerController player;
-    [SerializeField] private LayerMask layerMask;
+    //[SerializeField] private LayerMask layerMask;
     [SerializeField] private float horizonValues;
     [SerializeField] private float verticalValues;
 
     private Vector3 initialPosition;
     private Vector3 offset;
+    private bool canDectected;
 
     private void Start()
     {
@@ -21,10 +22,14 @@ public class LedgeDetection : MonoBehaviour
     private void Update()
     {
         ChangeCheckerPosition();
-        player.ledgeDetected = Physics.CheckSphere(transform.position, radius, layerMask);
+        if(canDectected )
+        {
+            player.ledgeDetected = Physics.CheckSphere(transform.position, radius, player.climableLayers);
+        }
+        
     }
 
-    void ChangeCheckerPosition()
+    private void ChangeCheckerPosition()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -48,6 +53,22 @@ public class LedgeDetection : MonoBehaviour
 
         transform.position = player.transform.position + offset + initialPosition;
 
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.layer == player.climableLayers) { }
+        {
+            canDectected = false;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.layer == player.climableLayers) { }
+        {
+            canDectected = true;
+        }
     }
 
     private void OnDrawGizmos()
