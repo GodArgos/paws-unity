@@ -26,26 +26,29 @@ public class PlayerController : MonoBehaviour
     
     [SerializeField] private float movingSpeed;
     [SerializeField] private float runnningSpeed;
-    [SerializeField] private float jumpForce;
+    [SerializeField] public float jumpForce;
     [SerializeField] private float forceMagnitude;
 
     [Header("Checking Attributes")]
     [SerializeField] private bool isGrounded;
     public MovementState state;
 
-    [Header("Misc")]
-    [SerializeField] private LayerMask collidableLayers;
-    [SerializeField] public LayerMask climableLayers;
-
-    // Ground Collision Detection
-    private Vector3 boxColliderCenter;
-    private Vector3 boxColliderSize;
-
     // Ledge Climbing
     [Header("Ledge Info")]
     [SerializeField] private Vector3 offset1; // Offest for position before climb
     [SerializeField] private Vector3 offset2; // Offset for position after climb
     [HideInInspector] public bool ledgeDetected;
+
+    [Header("Misc")]
+    [SerializeField] private LayerMask collidableLayers;
+    [SerializeField] public LayerMask climableLayers;
+    [SerializeField] public bool hasKey = false;
+
+    // Ground Collision Detection
+    private Vector3 boxColliderCenter;
+    private Vector3 boxColliderSize;
+
+    
 
     private Vector3 climbBegunPosition;
     private Vector3 climbOverPosition;
@@ -131,7 +134,6 @@ public class PlayerController : MonoBehaviour
 
         if (Physics.CheckBox(origin, Vector3.Scale(boxColliderSize, boxCastSize), Quaternion.identity, collidableLayers))
         {
-            Debug.Log("HIT");
             isGrounded = true;
         }
         else
@@ -171,19 +173,17 @@ public class PlayerController : MonoBehaviour
 
     private void AllowLedgeGrab() => canGrabLedge = true;
 
-    private void Grab()
-    {
-        RaycastHit hit;
-        
-    }
-
     private void OnDrawGizmos()
     {
         Vector3 origin = transform.position + boxColliderCenter - new Vector3(0f, .05f, 0f);
         Vector3 boxCastSize = new Vector3(2.8f, 0.5f, 0.7f);
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(origin, Vector3.Scale(boxColliderSize, boxCastSize));
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawRay(transform.position, transform.forward);
     }
 
-}
+ }
+
 
