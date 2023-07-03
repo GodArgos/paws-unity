@@ -81,6 +81,7 @@ public class FlameLogic : MonoBehaviour
         {
             //flame.SetActive(state);
             partSys = flame.GetComponent<ParticleSystem>();
+            
             if (state) 
             {
                 partSys.Play();
