@@ -6,9 +6,14 @@ using UnityEngine;
 public class CameraChangerLogic : MonoBehaviour
 {
     [SerializeField] private PlayerController playerController;
-
-    [SerializeField] private string targetTag;
     [SerializeField] private CinemachineVirtualCamera targetCamera;
+    [SerializeField] private bool changeCamera;
+    [SerializeField] private string targetTag;
+
+    [SerializeField] public Vector3 initialRotation;
+    [SerializeField] public Vector3 targetRotation;
+
+    private int initialPriority;
 
     private void Start()
     {
@@ -16,11 +21,17 @@ public class CameraChangerLogic : MonoBehaviour
     }
 
     private void OnTriggerEnter(Collider other)
-    {
+    {   
         if (other.CompareTag(targetTag))
         {
+            playerController.rotacionObjetivo = Quaternion.Euler(targetRotation);
             playerController.viewChanged = true;
-            targetCamera.Priority = 11;
+
+            if (changeCamera)
+            {
+                initialPriority = targetCamera.Priority;
+                targetCamera.Priority = 11;
+            }
         }
         
     }
@@ -29,8 +40,13 @@ public class CameraChangerLogic : MonoBehaviour
     {
         if (other.CompareTag(targetTag))
         {
+            playerController.rotacionInicial = Quaternion.Euler(initialRotation);
             playerController.viewChanged = false;
-            targetCamera.Priority = 9;
+
+            if (targetCamera)
+            {
+                targetCamera.Priority = initialPriority;
+            }
         }
     }
 }
