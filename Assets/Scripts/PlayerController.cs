@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     private BoxCollider bCollider;
 
     [HideInInspector] public Vector3 moveDirection;
+    [HideInInspector] public bool viewChanged = false;
 
     public enum MovementState
     {
@@ -48,13 +49,15 @@ public class PlayerController : MonoBehaviour
     private Vector3 boxColliderCenter;
     private Vector3 boxColliderSize;
 
-    
+    // Camera Changes
+    public float velocidadRotacion = 5f;
+    private Quaternion rotacionInicial;
+    private Quaternion rotacionObjetivo;
 
     private Vector3 climbBegunPosition;
     private Vector3 climbOverPosition;
     private bool canGrabLedge = true;
     private bool canClimb;
-
 
     private void Start()
     {
@@ -64,6 +67,9 @@ public class PlayerController : MonoBehaviour
 
         boxColliderCenter = bCollider.center;
         boxColliderSize = bCollider.size;
+
+        rotacionInicial = transform.rotation;
+        rotacionObjetivo = Quaternion.Euler(0f, -90f, 0f);
     }
 
     // Update is called once per frame
@@ -73,6 +79,17 @@ public class PlayerController : MonoBehaviour
         Jump();
         Run();
         CheckForLedge();
+
+        if (viewChanged)
+        {
+            // Rota progresivamente hacia -90 grados en el eje Y
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotacionObjetivo, velocidadRotacion * Time.deltaTime);
+        }
+        else
+        {
+            // Rota progresivamente hacia la rotación inicial
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotacionInicial, velocidadRotacion * Time.deltaTime);
+        }
     }
 
     private void Move()
@@ -80,14 +97,26 @@ public class PlayerController : MonoBehaviour
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
 
+        if (!viewChanged)
+        {
+            moveDirection = new Vector3(moveHorizontal, 0f, moveVertical).normalized;
+        }
+        else
+        {
+            moveDirection = new Vector3(-moveVertical, 0f, moveHorizontal).normalized;
+        }
 
-        moveDirection = new Vector3(moveHorizontal, 0f, moveVertical).normalized;
 
-
-        if (moveDirection.sqrMagnitude > 0.01f)
+        if (moveDirection.sqrMagnitude > 0.01f && !viewChanged)
         {
             animator.SetFloat("Horizontal", moveDirection.x);
             animator.SetFloat("Vertical", moveDirection.z);
+            state = MovementState.Walking;
+        }
+        else if (moveDirection.sqrMagnitude > 0.01f && viewChanged)
+        {
+            animator.SetFloat("Horizontal", moveDirection.z);
+            animator.SetFloat("Vertical", -moveDirection.x);
             state = MovementState.Walking;
         }
         else
@@ -184,6 +213,7 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawRay(transform.position, transform.forward);
     }
 
- }
+}
+
 
 

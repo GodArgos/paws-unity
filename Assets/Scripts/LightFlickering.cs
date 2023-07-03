@@ -4,32 +4,38 @@ using UnityEngine;
 
 public class LightFlickering : MonoBehaviour
 {
+    [SerializeField] private Light targetLight;
     [SerializeField] private bool isFlickering = false;
     [SerializeField] private float timeDelay;
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        if (!isFlickering)
+        targetLight = GetComponent<Light>();
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+        if (!isFlickering && targetLight != null && gameObject.layer == LayerMask.NameToLayer("Flickering"))
         {
             StartCoroutine(FlickeringLight());
         }
     }
 
-    IEnumerator FlickeringLight()
+    private IEnumerator FlickeringLight()
     {
         isFlickering = true;
-        this.gameObject.GetComponent<Light>().enabled = false;
+        targetLight.enabled = false;
         timeDelay = 0.1f;
         yield return new WaitForSeconds(timeDelay);
 
-        this.gameObject.GetComponent<Light>().enabled = true;
+        targetLight.enabled = true;
         yield return new WaitForSeconds(timeDelay);
 
-        this.gameObject.GetComponent<Light>().enabled = false;
+        targetLight.enabled = false;
         yield return new WaitForSeconds(timeDelay);
 
-        this.gameObject.GetComponent<Light>().enabled = true;
+        targetLight.enabled = true;
         timeDelay = 10f;
         yield return new WaitForSeconds(timeDelay);
 
