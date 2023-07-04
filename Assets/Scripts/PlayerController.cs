@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour
         Run();
         CheckForLedge();
 
-        if (viewChanged)
+        /*if (viewChanged)
         {
             // Rota progresivamente hacia -90 grados en el eje Y
             transform.rotation = Quaternion.Lerp(transform.rotation, rotacionObjetivo, velocidadRotacion * Time.deltaTime);
@@ -97,7 +97,9 @@ public class PlayerController : MonoBehaviour
         {
             // Rota progresivamente hacia la rotación inicial
             transform.rotation = Quaternion.Lerp(transform.rotation, rotacionInicial, velocidadRotacion * Time.deltaTime);
-        }
+        }*/
+
+        ChangeRotation();
     }
 
     private void Move()
@@ -106,35 +108,37 @@ public class PlayerController : MonoBehaviour
         float moveVertical = Input.GetAxis("Vertical");
 
 
-        if (!viewChanged)
+        if (r_state == RotationState.Zero)
         {
             moveDirection = new Vector3(moveHorizontal, 0f, moveVertical).normalized;
         }
-        else if (viewChanged && rotacionObjetivo.y == -90f)
+        else if (r_state == RotationState.Ninety)
         {
             moveDirection = new Vector3(-moveVertical, 0f, moveHorizontal).normalized;
         }
-        else if (viewChanged && rotacionObjetivo.y == -180f)
+        else if (r_state == RotationState.HunEighty)
         {
             moveDirection = new Vector3(-moveHorizontal, 0f, -moveVertical).normalized;
         }
 
 
-        if (moveDirection.sqrMagnitude > 0.01f && !viewChanged )
+        if (moveDirection.sqrMagnitude > 0.01f && r_state == RotationState.Zero)
         {
             animator.SetFloat("Horizontal", moveDirection.x);
             animator.SetFloat("Vertical", moveDirection.z);
             state = MovementState.Walking;
         }
-        else if (moveDirection.sqrMagnitude > 0.01f && viewChanged && rotacionObjetivo.y == -90f)
+        else if (moveDirection.sqrMagnitude > 0.01f && r_state == RotationState.Ninety)
         {
             animator.SetFloat("Horizontal", moveDirection.z);
             animator.SetFloat("Vertical", -moveDirection.x);
             state = MovementState.Walking;
         }
-        else if (moveDirection.sqrMagnitude > 0.01f && viewChanged && rotacionObjetivo.y == -180f)
+        else if (moveDirection.sqrMagnitude > 0.01f && r_state == RotationState.HunEighty)
         {
-
+            animator.SetFloat("Horizontal", -moveDirection.x);
+            animator.SetFloat("Vertical", -moveDirection.z);
+            state = MovementState.Walking;
         }
         else
         {
@@ -218,6 +222,27 @@ public class PlayerController : MonoBehaviour
     }
 
     private void AllowLedgeGrab() => canGrabLedge = true;
+
+    public void ChangeRotation()
+    {
+        Quaternion targetRotation;
+        
+        if (r_state == RotationState.Zero)
+        {
+            targetRotation = Quaternion.Euler(0f, 0f, 0f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, velocidadRotacion * Time.deltaTime);
+        }
+        else if (r_state == RotationState.Ninety)
+        {
+            targetRotation = Quaternion.Euler(0f, -90, 0f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, velocidadRotacion * Time.deltaTime);
+        }
+        else if (r_state == RotationState.HunEighty)
+        {
+            targetRotation = Quaternion.Euler(0f, -180f, 0f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, velocidadRotacion * Time.deltaTime);
+        }
+    }
 
     private void OnDrawGizmos()
     {
