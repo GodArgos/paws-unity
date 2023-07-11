@@ -6,11 +6,8 @@ public class ChangeRotationTrigger : MonoBehaviour
 {
     [SerializeField] private PlayerController controller;
     [SerializeField] private PlayerController.RotationState rotationState;
-    
-    
-    [SerializeField] private Vector3 targetRotation;
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player"))
         {

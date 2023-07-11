@@ -5,8 +5,11 @@ using UnityEngine;
 public class OpenDoorLogic : MonoBehaviour
 {
     [SerializeField] private PlayerController player;
-    [SerializeField] private HingeJoint hingeJoint;
+    [SerializeField] private new HingeJoint hingeJoint;
     [SerializeField] private Rigidbody rb;
+    [SerializeField] private GameObject HUD;
+    [SerializeField] private Animator animHUD;
+    [SerializeField] public bool opened = false;
 
     private JointMotor originalMotor;
     private JointLimits originalLimits;
@@ -44,10 +47,11 @@ public class OpenDoorLogic : MonoBehaviour
                 hingeJoint.motor = originalMotor;
                 hingeJoint.limits = originalLimits;
 
-            }
-            else
-            {
-                // Mostar Burbuja de necesitar llave
+                animHUD.SetBool("hasBeenUsed", true);
+                //HUD.SetActive(false);
+
+                opened = true;
+                player.showPopup = false;
             }
         }
     }

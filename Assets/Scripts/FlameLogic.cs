@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class FlameLogic : MonoBehaviour
 {
+    [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject[] Flames;
-    /*[SerializeField] private bool areEnable = false;
-    [SerializeField] private float timeDelay;*/
 
     private ParticleSystem partSys;
-    
+
     public float tiempoDeshabilitado = 4f;
     public float tiempoHabilitado = 6f;
-
     private bool deshabilitar = false;
+
+    public static bool isDamagable = false;
+    private float fireDamage = 0f;
 
     void Start()
     {
@@ -22,13 +23,9 @@ public class FlameLogic : MonoBehaviour
 
     private void Update()
     {
-        /* if (!areEnable && Flames != null)
-         {
-             StartCoroutine(FlickeringFlames());
-         }*/
-
         if (deshabilitar)
         {
+            fireDamage = 0f;
             tiempoDeshabilitado -= Time.deltaTime;
 
             if (tiempoDeshabilitado <= 0f)
@@ -44,6 +41,13 @@ public class FlameLogic : MonoBehaviour
         else
         {
             tiempoHabilitado -= Time.deltaTime;
+            
+            if (isDamagable)
+            {
+                fireDamage += 0.05f;
+                playerController.TakeDamage(fireDamage);
+            }
+            
 
             if (tiempoHabilitado <= 0f)
             {
@@ -57,29 +61,10 @@ public class FlameLogic : MonoBehaviour
         }
     }
 
-    /*private IEnumerator FlickeringFlames()
-    {
-        setFlamesTo(true);
-        timeDelay = 4f;
-        yield return new WaitForSeconds(timeDelay);
-
-        setFlamesTo(false);
-        timeDelay = 8f;
-        yield return new WaitForSeconds(timeDelay);
-
-        setFlamesTo(true);
-        timeDelay = 4f;
-        yield return new WaitForSeconds(timeDelay);
-
-        setFlamesTo(false);
-    }*/
-
     private void setFlamesTo(bool state)
     {
-        //areEnable = state;
         foreach (GameObject flame in Flames)
         {
-            //flame.SetActive(state);
             partSys = flame.GetComponent<ParticleSystem>();
             
             if (state) 
@@ -90,6 +75,22 @@ public class FlameLogic : MonoBehaviour
             {
                 partSys.Stop();
             }
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isDamagable = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isDamagable = false;
         }
     }
 }

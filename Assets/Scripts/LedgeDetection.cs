@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using static PlayerController;
 
 public class LedgeDetection : MonoBehaviour
 {
     [SerializeField] private float radius;
     [SerializeField] private PlayerController player;
-    //[SerializeField] private LayerMask layerMask;
     [SerializeField] private float horizonValues;
     [SerializeField] private float verticalValues;
 
@@ -34,22 +35,83 @@ public class LedgeDetection : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        if (horizontalInput < 0) // Left - A
+        if (player.r_state == RotationState.Zero)
         {
-            offset = new Vector3(-horizonValues, 0, 0);
+            if (horizontalInput < 0) // Left - A
+            {
+                offset = new Vector3(-horizonValues, 0, 0);
+            }
+            else if (horizontalInput > 0) // Right - D
+            {
+                offset = new Vector3(horizonValues, 0, 0);
+            }
+            else if (verticalInput < 0) // Front - S - Down
+            {
+                offset = new Vector3(0, 0, -verticalValues);
+            }
+            else if (verticalInput > 0) // Back - W - Up
+            {
+                offset = new Vector3(0, 0, verticalValues);
+            }
         }
-        else if (horizontalInput > 0) // Right - D
+        else if (player.r_state == RotationState.Ninety)
         {
-            offset = new Vector3(horizonValues, 0, 0);
+            if (horizontalInput < 0) // Left - A
+            {
+                offset = new Vector3(0, 0, -horizonValues);
+            }
+            else if (horizontalInput > 0) // Right - D
+            {
+                offset = new Vector3(0, 0, horizonValues);
+            }
+            else if (verticalInput < 0) // Front - S - Down
+            {
+                offset = new Vector3(verticalValues, 0, 0);
+            }
+            else if (verticalInput > 0) // Back - W - Up
+            {
+                offset = new Vector3(-verticalValues, 0, 0);
+            }
         }
-        else if (verticalInput < 0) // Front - S - Down
+        else if (player.r_state == RotationState.HunEighty)
         {
-            offset = new Vector3(0, 0, -verticalValues);
+            if (horizontalInput < 0) // Left - A
+            {
+                offset = new Vector3(horizonValues, 0, 0);
+            }
+            else if (horizontalInput > 0) // Right - D
+            {
+                offset = new Vector3(-horizonValues, 0, 0);
+            }
+            else if (verticalInput < 0) // Front - S - Down
+            {
+                offset = new Vector3(0, 0, verticalValues);
+            }
+            else if (verticalInput > 0) // Back - W - Up
+            {
+                offset = new Vector3(0, 0, -verticalValues);
+            }
         }
-        else if (verticalInput > 0) // Back - W - Up
+        else if (player.r_state == RotationState.Special)
         {
-            offset = new Vector3(0, 0, verticalValues);
+            if (horizontalInput < 0) // Left - A
+            {
+                offset = new Vector3(-horizonValues, 0, 0);
+            }
+            else if (horizontalInput > 0) // Right - D
+            {
+                offset = new Vector3(horizonValues, 0, 0);
+            }
+            else if (verticalInput < 0) // Front - S - Down
+            {
+                offset = new Vector3(0, 0, -verticalValues);
+            }
+            else if (verticalInput > 0) // Back - W - Up
+            {
+                offset = new Vector3(0, 0, verticalValues);
+            }
         }
+
 
         transform.position = player.transform.position + offset + initialPosition;
 

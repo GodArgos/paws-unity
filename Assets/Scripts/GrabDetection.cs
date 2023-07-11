@@ -14,15 +14,19 @@ public class GrabDetection : MonoBehaviour
     [SerializeField] private float horizonValues;
     [SerializeField] private float verticalValues;
 
-    
+    [Header("SFX")]
+    private AudioSource source;
+    [SerializeField] AudioClip clip;
+
     private GameObject grabbedObject;
-    private bool isGrabbing = false;
+    public bool isGrabbing = false;
     private Vector3 grabOffset;
 
     private Vector3 offset;
     private Vector3 direction;
     private float distance;
     private float initialJump;
+    private float initialSpeed;
     private Vector3 initialPosition;
     private float horizontalInput;
     private float verticalInput;
@@ -31,7 +35,11 @@ public class GrabDetection : MonoBehaviour
 
     private void Start()
     {
+        source = GetComponent<AudioSource>();
+        source.clip = clip;
+        
         initialJump = player.jumpForce;
+        initialSpeed = player.movingSpeed;
         initialPosition = transform.position - player.transform.position;
     }
 
@@ -59,15 +67,19 @@ public class GrabDetection : MonoBehaviour
 
     private void Grab(GameObject gObject)
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButtonDown(0))
         {
             if (grabbedObject == null && !isGrabbing && player.state != PlayerController.MovementState.Air)
             {
                 player.jumpForce = 0f;
+                player.movingSpeed = 1.5f;
                 grabbedObject = gObject;
                 grabOffset = grabbedObject.transform.position - player.transform.position;
                 grabbedObject.GetComponent<Rigidbody>().isKinematic = true;
                 isGrabbing = true;
+
+                source.loop = true;
+                source.Play();
             }
         }
         else if (Input.GetMouseButtonUp(0)) 
@@ -101,6 +113,11 @@ public class GrabDetection : MonoBehaviour
         grabbedObject = null;
         isGrabbing = false;
         player.jumpForce = initialJump;
+        player.movingSpeed = initialSpeed;
+
+        source.loop = false;
+        source.Stop();
+        objectToGrab = null;
     }
 
     private void ChangeCheckerPosition()

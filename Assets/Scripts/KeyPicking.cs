@@ -6,10 +6,13 @@ public class KeyPicking : MonoBehaviour
 {
     [SerializeField] private PlayerController player;
     [SerializeField] private Animator animator;
+    [SerializeField] private Animator animHUD;
+    [SerializeField] private GameObject HUD;
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
+        HUD.SetActive(false);
     }
 
     private void OnTriggerStay(Collider other)
@@ -18,7 +21,9 @@ public class KeyPicking : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.E))
             {
+                HUD.SetActive(true);
                 animator.SetBool("toDisappear", true);
+                animHUD.SetBool("hasBeenUsed", false);
             }
         }
     }
