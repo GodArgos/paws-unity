@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
-using UnityEditor.Tilemaps;
 using UnityEngine;
 
 public class GrabDetection : MonoBehaviour
