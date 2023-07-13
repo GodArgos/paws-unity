@@ -6,6 +6,7 @@ public class FlameLogic : MonoBehaviour
 {
     [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject[] Flames;
+    private AudioSource source;
 
     private ParticleSystem partSys;
 
@@ -16,9 +17,13 @@ public class FlameLogic : MonoBehaviour
     public static bool isDamagable = false;
     private float fireDamage = 0f;
 
+    [SerializeField] private float cooldown = 2f;
+
     void Start()
     {
+        source = GetComponent<AudioSource>();
         setFlamesTo(true);
+        source.loop = true;
     }
 
     private void Update()
@@ -41,11 +46,13 @@ public class FlameLogic : MonoBehaviour
         else
         {
             tiempoHabilitado -= Time.deltaTime;
-            
-            if (isDamagable)
+            cooldown -= Time.deltaTime;
+
+            if (isDamagable && cooldown <= 0)
             {
-                fireDamage += 0.05f;
+                fireDamage = 70f;
                 playerController.TakeDamage(fireDamage);
+                cooldown = 2f;
             }
             
 
@@ -69,10 +76,18 @@ public class FlameLogic : MonoBehaviour
             
             if (state) 
             {
+                if (!source.isPlaying)
+                {
+                    source.Play();
+                }
                 partSys.Play();
             }
             else
             {
+                if (source.isPlaying)
+                {
+                    source.Pause();
+                }
                 partSys.Stop();
             }
         }

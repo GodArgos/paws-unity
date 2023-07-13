@@ -75,7 +75,7 @@ public class NewBehaviourScript : MonoBehaviour
     {
         if (functionState == BehaviorOption.CheckMovement)
         {
-            return playerController.moveDirection.sqrMagnitude > 0.01f;
+            return playerController.moveDirection.sqrMagnitude > 0.01f && playerController.movingSpeed > 0;
         }
 
         else if (functionState == BehaviorOption.CheckPull)

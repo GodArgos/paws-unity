@@ -16,6 +16,9 @@ public class GrabDetection : MonoBehaviour
     private AudioSource source;
     [SerializeField] AudioClip clip;
 
+    [Header("Sprite")]
+    [SerializeField] private Animator animator;
+
     private GameObject grabbedObject;
     public bool isGrabbing = false;
     private Vector3 grabOffset;
@@ -76,6 +79,8 @@ public class GrabDetection : MonoBehaviour
                 grabbedObject.GetComponent<Rigidbody>().isKinematic = true;
                 isGrabbing = true;
 
+                animator.SetBool("isGrabbingA", true);
+
                 source.loop = true;
                 source.Play();
             }
@@ -112,6 +117,8 @@ public class GrabDetection : MonoBehaviour
         isGrabbing = false;
         player.jumpForce = initialJump;
         player.movingSpeed = initialSpeed;
+
+        animator.SetBool("isGrabbingA", false);
 
         source.loop = false;
         source.Stop();

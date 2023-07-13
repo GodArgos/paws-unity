@@ -10,9 +10,12 @@ public class OpenDoorLogic : MonoBehaviour
     [SerializeField] private GameObject HUD;
     [SerializeField] private Animator animHUD;
     [SerializeField] public bool opened = false;
+    [SerializeField] private AudioClip UnlockSFX;
+    private AudioSource source;
 
     private JointMotor originalMotor;
     private JointLimits originalLimits;
+    private int count = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -20,6 +23,7 @@ public class OpenDoorLogic : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true;
         hingeJoint = GetComponent<HingeJoint>();
+        source = GetComponent<AudioSource>();
 
         // Guardar las características originales del HingeJoint
         originalMotor = hingeJoint.motor;
@@ -35,6 +39,9 @@ public class OpenDoorLogic : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.E) && player.hasKey == true)
             {
+
+                StartCoroutine(WaitForSound());
+
                 player.hasKey = false;
 
                 rb.isKinematic = false;
@@ -52,7 +59,15 @@ public class OpenDoorLogic : MonoBehaviour
 
                 opened = true;
                 player.showPopup = false;
+
+                
             }
         }
+    }
+
+    private IEnumerator WaitForSound()
+    {
+        source.PlayOneShot(UnlockSFX);
+        yield return new WaitWhile(() => source.isPlaying);
     }
 }

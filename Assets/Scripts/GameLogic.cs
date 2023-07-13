@@ -7,15 +7,34 @@ public class GameLogic : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject player;
     [SerializeField] private GameObject[] spawnPoints;
+    [SerializeField] private GameObject loadingScreen;
+    [SerializeField] private Animator anim_loadingScreen;
+    [SerializeField] private float timer = 5f;
+
+    private bool inRespawning = false;
 
     // Update is called once per frame
     void Update()
     {
-        if (!playerController.alive)
+        if (!playerController.alive && !inRespawning)
         {
-            playerController.currentHealth = 100;
-            playerController.alive = true;
-            SpawnPlayer();
+            loadingScreen.SetActive(true);
+            anim_loadingScreen.SetBool("isLoading", true);
+
+            inRespawning = true;
+        }
+
+        if (inRespawning)
+        {
+            if (timer >= 0f)
+            {
+                timer -= Time.deltaTime;
+            }
+            else
+            {
+                
+                SpawnPlayer();
+            }
         }
     }
 
@@ -23,6 +42,14 @@ public class GameLogic : MonoBehaviour
     {
         GameObject sp = GetNearestSpawnPoint();
         player.transform.position = sp.transform.position;
+
+        anim_loadingScreen.SetBool("isLoading", false);
+
+        timer = 5f;
+        inRespawning = false;
+
+        playerController.currentHealth = 100;
+        playerController.alive = true;
     }
 
     private GameObject GetNearestSpawnPoint()

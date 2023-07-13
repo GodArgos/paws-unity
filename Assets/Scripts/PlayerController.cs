@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
         Idle,
         Walking,
         Sprinting,
+        Climbing,
         Air
     }
 
@@ -38,6 +39,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] public float currentHealth;
     [SerializeField] private float healthRecoveryRate = 1f; // Velocidad de recuperación de vida
     [SerializeField] public bool alive = true;
+    [SerializeField] public bool hurted = false;
 
     [Header("Variables")]
     
@@ -47,12 +49,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float forceMagnitude;
 
     [Header("Falling Damage")]
-    [SerializeField] private float fallThreshold = 10f; // Velocidad mínima para sufrir daño al caer
+    [SerializeField] private float fallThreshold = 12.5f; // Velocidad mínima para sufrir daño al caer
     [SerializeField] private bool isFalling = false;
     [SerializeField] private float fallSpeed = 0f;
     [SerializeField] private bool hasLanded = false;
 
     [Header("Checking Attributes")]
+    [SerializeField] private bool hasJumped = false;
     [SerializeField] private GrabDetection grabCheck;
     [SerializeField] private bool isGrounded;
     public MovementState state;
@@ -68,6 +71,7 @@ public class PlayerController : MonoBehaviour
     private AudioClip currentAudioClip;
     [SerializeField] private AudioClip meowingSound;
     [SerializeField] private AudioClip walkingSound;
+    [SerializeField] private AudioClip sprintingSound;
 
     [Header("Misc")]
     [SerializeField] private LayerMask collidableLayers;
@@ -117,8 +121,11 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (!PauseMenuLogic.isPaused)
+        if (!PauseMenuLogic.isPaused && !FrameLogic.onCinematic && !VerificarCinemática.onIntro)
         {
+            animator.SetBool("isJumping", hasJumped);
+            animator.SetBool("canClimb", canClimb);
+
             // Basic Movement
             Move();
             Jump();
@@ -130,17 +137,24 @@ public class PlayerController : MonoBehaviour
 
             // Check for Things
             CheckForLedge();
+            
             ChangeRotation();
             TimerPopUp();
-            CheckForFallDamage();
+
+            HealthRecover();
         }
     }
 
     private void Move()
     {
-        float moveHorizontal = Input.GetAxis("Horizontal");
-        float moveVertical = Input.GetAxis("Vertical");
+        float moveHorizontal = 0;
+        float moveVertical = 0;
 
+        if (alive)
+        {
+            moveHorizontal = Input.GetAxis("Horizontal");
+            moveVertical = Input.GetAxis("Vertical");
+        }
 
         if (r_state == RotationState.Zero)
         {
@@ -198,26 +212,38 @@ public class PlayerController : MonoBehaviour
     {
         CheckIfGrounded();
 
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        if (isGrounded && alive && Input.GetKeyDown(KeyCode.Space))
         {
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z).normalized;
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+            hasJumped = true;
             
             state = MovementState.Air;
+
+            Invoke("DeactiveJumpAnim", 1f);
 
         }
     }
 
+    private void DeactiveJumpAnim() => hasJumped = false;
+
     private void Run()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && !grabCheck.isGrabbing)
+        if (alive && Input.GetKey(KeyCode.LeftShift) && !grabCheck.isGrabbing)
         {
             Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
             horizontalVelocity = horizontalVelocity.normalized * runnningSpeed;
             rb.velocity = new Vector3(horizontalVelocity.x, rb.velocity.y, horizontalVelocity.z);
+
+            animator.speed = 1.5f;
             
             state = MovementState.Sprinting;
+        }
+        else
+        {
+            animator.speed = 1f;
         }
     }
 
@@ -237,7 +263,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void CheckForFallDamage()
+    /*private void CheckForFallDamage()
     {
         if (state == MovementState.Air)
         {
@@ -246,7 +272,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Verificar si el jugador ha aterrizado
-        if (isFalling && state != MovementState.Air)
+        if (isFalling && state != MovementState.Air && !canClimb)
         {
             if (!hasLanded && fallSpeed > fallThreshold)
             {
@@ -264,11 +290,13 @@ public class PlayerController : MonoBehaviour
         if (isGrounded)
         {
             hasLanded = false;
+            hasBeenHurt = false;
         }
 
         // Recuperación progresiva de vida
         if (!isFalling && currentHealth < maxHealth)
         {
+            
             currentHealth += healthRecoveryRate * Time.deltaTime;
             currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
         }
@@ -280,26 +308,38 @@ public class PlayerController : MonoBehaviour
         float damage = Mathf.Floor(fallSpeed) * 5f;
 
         return damage;
+    }*/
+
+    private void HealthRecover()
+    {
+        if (currentHealth < maxHealth)
+        {
+
+            currentHealth += healthRecoveryRate * Time.deltaTime;
+            currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        }
     }
 
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
-        Debug.Log("¡El jugador sufrió " + damage + " puntos de daño por la caída!");
+        
 
         if (currentHealth <= 0f)
         {
-            // Aquí puedes agregar la lógica para manejar la muerte del jugador
-            // Ejemplo: Game Over, reiniciar nivel, etc.
             alive = false;
         }
+
+        hurted = true;
     }
 
     private void CheckForLedge()
     {
         if (ledgeDetected && canGrabLedge)
         {
+            fallSpeed = 0;
+
             canGrabLedge = false;
 
             Vector3 ledgePosition = GetComponentInChildren<LedgeDetection>().transform.position;
@@ -308,23 +348,33 @@ public class PlayerController : MonoBehaviour
             climbOverPosition = ledgePosition + offset2;
 
             canClimb = true;
+            
         }
 
         if (canClimb)
         {
+            fallSpeed = 0;
+
+            state = MovementState.Climbing;
             transform.position = climbBegunPosition;
-            LedgeClimbOver();
         }
     }
 
     private void LedgeClimbOver()
     {
-        canClimb = false;
+        fallSpeed = 0;
         transform.position = climbOverPosition;
-        Invoke("AllowLedgeGrab", .1f);
+        canClimb = false;
+        Invoke("AllowLedgeGrab", .5f);
     }
 
-    private void AllowLedgeGrab() => canGrabLedge = true;
+
+    private void AllowLedgeGrab()
+    {
+        canGrabLedge = true;
+        fallSpeed = 0;
+        //state = MovementState.Idle;
+    }
 
     public void ChangeRotation()
     {
@@ -389,13 +439,19 @@ public class PlayerController : MonoBehaviour
         }
         else if (state == MovementState.Sprinting)
         {
-            // Agrega aquí el audio correspondiente al estado de sprinting
+            if (currentAudioClip != sprintingSound)
+            {
+                PlayLastingSFX(sprintingSound);
+                currentAudioClip = sprintingSound;
+            }
         }
         else if (state == MovementState.Idle)
         {
-            source.loop = false;
-            source.Stop();
-            currentAudioClip = null;
+            if (currentAudioClip != null)
+            {
+                source.Stop();
+                currentAudioClip = null;
+            }
         }
     }
 

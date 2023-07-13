@@ -6,10 +6,27 @@ using UnityEngine.SceneManagement;
 public class MenuEventSystem : MonoBehaviour
 {
     [HideInInspector] public bool startGame = false;
+    private float timer = 10f;
+    [HideInInspector] public bool loadTimer = false;
 
     private void Start()
     {
         StartCoroutine(LoadGameSceneAsync());
+    }
+
+    private void Update()
+    {
+        if (loadTimer)
+        {
+            if (timer >= 0)
+            {
+                timer -= Time.deltaTime;
+            }
+            else
+            {
+                startGame = true;
+            }
+        }
     }
 
     IEnumerator LoadGameSceneAsync()
