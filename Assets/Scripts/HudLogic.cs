@@ -7,6 +7,7 @@ public class HudLogic : MonoBehaviour
     [SerializeField] private GameObject HUD;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private Animator animator;
+    [SerializeField] private FrameLogic frameLogic;
 
     void Start()
     {
@@ -16,10 +17,18 @@ public class HudLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (playerController.hasKey)
+        if (!FrameLogic.onCinematic)
         {
-            HUD.SetActive(true);
-            animator.SetBool("hasBeenUsed", false);
+            if (playerController.hasKey)
+            {
+                HUD.SetActive(true);
+                animator.SetBool("hasBeenUsed", false);
+            }
         }
+        else
+        {
+            HUD.SetActive(false);
+        }
+        
     }
 }

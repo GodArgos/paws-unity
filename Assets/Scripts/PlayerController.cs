@@ -1,11 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -51,7 +44,6 @@ public class PlayerController : MonoBehaviour
     [Header("Falling Damage")]
     [SerializeField] private float fallThreshold = 12.5f; // Velocidad mínima para sufrir daño al caer
     [SerializeField] private bool isFalling = false;
-    [SerializeField] private float fallSpeed = 0f;
     [SerializeField] private bool hasLanded = false;
 
     [Header("Checking Attributes")]
@@ -65,13 +57,15 @@ public class PlayerController : MonoBehaviour
     [Header("Ledge Info")]
     [SerializeField] private Vector3 offset1; // Offest for position before climb
     [SerializeField] private Vector3 offset2; // Offset for position after climb
+    [SerializeField] public Vector3 offset1V;
+    [SerializeField] public Vector3 offset2V;
+    [HideInInspector] public bool switchToVerti = false;
     [HideInInspector] public bool ledgeDetected;
 
     [Header("SFX")]
     private AudioClip currentAudioClip;
     [SerializeField] private AudioClip meowingSound;
     [SerializeField] private AudioClip walkingSound;
-    [SerializeField] private AudioClip sprintingSound;
 
     [Header("Misc")]
     [SerializeField] private LayerMask collidableLayers;
@@ -121,7 +115,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (!PauseMenuLogic.isPaused && !FrameLogic.onCinematic && !VerificarCinemática.onIntro)
+        if (!PauseMenuLogic.isPaused || !FrameLogic.onCinematic || !VerificarCinemática.onIntro)
         {
             animator.SetBool("isJumping", hasJumped);
             animator.SetBool("canClimb", canClimb);
@@ -338,14 +332,20 @@ public class PlayerController : MonoBehaviour
     {
         if (ledgeDetected && canGrabLedge)
         {
-            fallSpeed = 0;
-
             canGrabLedge = false;
 
             Vector3 ledgePosition = GetComponentInChildren<LedgeDetection>().transform.position;
 
-            climbBegunPosition = ledgePosition + offset1;
-            climbOverPosition = ledgePosition + offset2;
+            if (!switchToVerti)
+            {
+                climbBegunPosition = ledgePosition + offset1;
+                climbOverPosition = ledgePosition + offset2;
+            }
+            else
+            {
+                climbBegunPosition = ledgePosition + offset1V;
+                climbOverPosition = ledgePosition + offset2V;
+            }
 
             canClimb = true;
             
@@ -353,8 +353,6 @@ public class PlayerController : MonoBehaviour
 
         if (canClimb)
         {
-            fallSpeed = 0;
-
             state = MovementState.Climbing;
             transform.position = climbBegunPosition;
         }
@@ -362,7 +360,6 @@ public class PlayerController : MonoBehaviour
 
     private void LedgeClimbOver()
     {
-        fallSpeed = 0;
         transform.position = climbOverPosition;
         canClimb = false;
         Invoke("AllowLedgeGrab", .5f);
@@ -372,8 +369,6 @@ public class PlayerController : MonoBehaviour
     private void AllowLedgeGrab()
     {
         canGrabLedge = true;
-        fallSpeed = 0;
-        //state = MovementState.Idle;
     }
 
     public void ChangeRotation()
@@ -435,14 +430,6 @@ public class PlayerController : MonoBehaviour
             {
                 PlayLastingSFX(walkingSound);
                 currentAudioClip = walkingSound;
-            }
-        }
-        else if (state == MovementState.Sprinting)
-        {
-            if (currentAudioClip != sprintingSound)
-            {
-                PlayLastingSFX(sprintingSound);
-                currentAudioClip = sprintingSound;
             }
         }
         else if (state == MovementState.Idle)

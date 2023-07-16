@@ -40,10 +40,12 @@ public class LedgeDetection : MonoBehaviour
             if (horizontalInput < 0) // Left - A
             {
                 offset = new Vector3(-horizonValues, 0, 0);
+                player.switchToVerti = false;
             }
             else if (horizontalInput > 0) // Right - D
             {
                 offset = new Vector3(horizonValues, 0, 0);
+                player.switchToVerti = false;
             }
             else if (verticalInput < 0) // Front - S - Down
             {
@@ -52,6 +54,7 @@ public class LedgeDetection : MonoBehaviour
             else if (verticalInput > 0) // Back - W - Up
             {
                 offset = new Vector3(0, 0, verticalValues);
+                player.switchToVerti = true;
             }
         }
         else if (player.r_state == RotationState.Ninety)

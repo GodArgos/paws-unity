@@ -22,7 +22,8 @@ public class NewBehaviourScript : MonoBehaviour
         CheckJump,
         CheckSprint,
         CheckPickUp,
-        CheckUse
+        CheckUse,
+        CheckMemory
     }
 
     [SerializeField] private float timer = 3f;
@@ -101,6 +102,10 @@ public class NewBehaviourScript : MonoBehaviour
         else if (functionState == BehaviorOption.CheckUse)
         {
             return Input.GetKey(KeyCode.E) && playerController.hasKey;
+        }
+        else if (functionState == BehaviorOption.CheckMemory)
+        {
+            return FrameLogic.onCinematic;
         }
         
         return false;

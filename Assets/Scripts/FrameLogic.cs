@@ -20,7 +20,7 @@ public class FrameLogic : MonoBehaviour
 
     private bool hasStarted = false;
     private int count = 0;
-    private float timer = 22f;
+    private float timer = 20f;
     private BoxCollider bcollider;
 
     public static bool onCinematic = false;
