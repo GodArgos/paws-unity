@@ -28,6 +28,7 @@ Fue mi primer acercamiento a Unity y a un proyecto de mayor escala y calidad.
 ### 📌 Estado
 ✔ Prototipo completado
 
+![Paws_1](MD_Resources/Paws_1.png)
 ---
 
 ## 🇬🇧 English
@@ -57,3 +58,5 @@ This was my first major Unity project and my first experience working on a large
 
 ### 📌 Status
 ✔ Completed prototype
+
+![Paws_2](MD_Resources/Paws_2.png)
